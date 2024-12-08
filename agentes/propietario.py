@@ -1,5 +1,4 @@
-
-from main import Agente
+from .agentes import Agente
 
 class Propietario(Agente):
     def __init__(self, nombre, presupuesto):
