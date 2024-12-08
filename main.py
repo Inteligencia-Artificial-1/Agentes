@@ -1,4 +1,4 @@
-from propietario import Propietario as propietario
+from .agentes.propietario import Propietario
 class Agente:
     def __init__(self, nombre):
         self.nombre = nombre
@@ -68,7 +68,7 @@ class Albañil(Agente):
 # Flujo de Trabajo Simulado
 
 # Inicialización de agentes
-propietario = propietario("Juan", 100000)
+propietario = Propietario("Juan", 100000)
 vendedor = Vendedor("Pedro")
 arquitecto = Arquitecto("Ana")
 contratista = Contratista("Luis")
