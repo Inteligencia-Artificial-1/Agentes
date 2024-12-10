@@ -87,12 +87,6 @@ class Vendedor():
         path.append(start)
         path.reverse()
         return path
-    
-    #def vender(self, propiedad, Comprador, precio)
-        
-    #def comprobar(self, precio, pago)
-        
-    #def entregar(self, propiedad, Comprador)
         
 # Definición del Problema para el agente vendedor
 class Problema:
