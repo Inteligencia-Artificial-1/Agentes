@@ -15,7 +15,7 @@ class PrioridadCola:
         return heapq.heappop(self.elementos)[1]
 
 # Definición de las propiedades y sus características
-class Propiedad:
+class Terreno:
     def __init__(self, nombre, precio, tamano, ubicacion, servicios):
         self.nombre = nombre
         self.precio = precio
@@ -24,8 +24,8 @@ class Propiedad:
         self.servicios = servicios
 
 class Vendedor():
-    def __init__(self,propiedades):
-        self.propiedades = propiedades
+    def __init__(self,terrenos):
+        self.terrenos = terrenos
 
     #def ofrecer(self, propiedad , Comprador)
     def ofrecer(self, preferencias):
@@ -36,19 +36,19 @@ class Vendedor():
     def crear_problema(self, preferencias):
         estado_inicial = 'Inicio'
         estados_objetivo = [
-            propiedad.nombre for propiedad in self.propiedades if self.cumple_preferencias(propiedad, preferencias)
+            terreno.nombre for terreno in self.terrenos if self.cumple_preferencias(terreno, preferencias)
         ]
-        acciones = {'Inicio': {propiedad.nombre: 1 for propiedad in self.propiedades}}
-        for propiedad in self.propiedades:
-            acciones[propiedad.nombre] = {}
-            for otra_propiedad in self.propiedades:
-                if propiedad != otra_propiedad:
-                    acciones[propiedad.nombre][otra_propiedad.nombre] = 1
+        acciones = {'Inicio': {terreno.nombre: 1 for terreno in self.terrenos}}
+        for terreno in self.terrenos:
+            acciones[terreno.nombre] = {}
+            for otro_terreno in self.terrenos:
+                if terreno != otro_terreno:
+                    acciones[terreno.nombre][otro_terreno.nombre] = 1
         return Problema(estado_inicial, estados_objetivo, acciones)
 
-    def cumple_preferencias(self, propiedad, preferencias):
+    def cumple_preferencias(self, terreno, preferencias):
         for key, value in preferencias.items():
-            if getattr(propiedad, key, None) != value:
+            if getattr(terreno, key, None) != value:
                 return False
         return True
 
@@ -104,56 +104,56 @@ class Problema:
 
 
 if __name__ == '__main__':
-    propiedades = [
-        Propiedad('Propiedad 1', 100, 120, 'Centro', ['Piscina']),
-        Propiedad('Propiedad 2', 200, 150, 'Norte', ['Gimnasio']),
-        Propiedad('Propiedad 3', 300, 200, 'Sur', ['Jardín']),
-        Propiedad('Propiedad 4', 100, 100, 'Este', ['Garaje']),
-        Propiedad('Propiedad 5', 250, 180, 'Oeste', ['Terraza'])
+    terrenos = [
+        Terreno('Terreno 1', 100, 120, 'Centro', ['Luz']),
+        Terreno('Terreno 2', 200, 150, 'Norte', ['Alcantarillado']),
+        Terreno('Terreno 3', 300, 200, 'Sur', ['Agua']),
+        Terreno('Terreno 4', 100, 100, 'Este', ['Luz']),
+        Terreno('Terreno 5', 250, 180, 'Oeste', ['Agua'])
     ]
-    vendedor = Vendedor(propiedades)
+    vendedor = Vendedor(terrenos)
 
-    print("Presupuesto de la propiedad que buscas")
-    precio= int(input())
-    print("Te interesa que tenga algun tamaño")
-    tamanio=int(input())
-    print("Buscas que este Ubicada en algun lugar")
-    ubicacion=input()
+    # Entrada del precio
+    while True:
+        try:
+            print("Presupuesto del terreno que buscas:")
+            precio = input()
+            precio = int(precio) if precio.strip() != '' else None
+            break
+        except ValueError:
+            print("Por favor, ingresa un número válido para el precio.")
 
-    preferencias = {
-        "precio": precio,
-        "tamano": tamanio,
-        "ubicacion": ubicacion
-    }
-    
-    vendedor = Vendedor(propiedades)
+    # Entrada del tamaño
+    while True:
+        try:
+            print("¿Te interesa que tenga algún tamaño?")
+            tamanio = input()
+            tamanio = int(tamanio) if tamanio.strip() != '' else None
+            break
+        except ValueError:
+            print("Por favor, ingresa un número válido para el tamaño.")
+
+    # Entrada de la ubicación
+    print("¿Buscas que esté ubicada en algún lugar?")
+    ubicacion = input()
+    ubicacion = ubicacion.strip() if ubicacion.strip() != '' else None
+
+    # Construcción de preferencias
+    preferencias = {}
+    if precio is not None:
+        preferencias["precio"] = precio
+    if tamanio is not None:
+        preferencias["tamano"] = tamanio
+    if ubicacion is not None:
+        preferencias["ubicacion"] = ubicacion
+
+    # Ofrecer solución
+    vendedor = Vendedor(terrenos)
     solucion = vendedor.ofrecer(preferencias)
 
     if solucion:
-        print("Tengo una propiedad que te puede interesar:", solucion)
+        print("Tengo un terreno que te podría interesarte:", solucion)
     else:
-        print("No se encontró ninguna propiedad que cumpla con las preferencias.")
+        print("No se encontró ningún terreno que cumpla con las preferencias.")
 
-"""if __name__ == '__main__':
-    propiedades = [
-        Propiedad('Propiedad 1', 100, 120, 'Centro', ['Piscina']),
-        Propiedad('Propiedad 2', 200, 150, 'Norte', ['Gimnasio']),
-        Propiedad('Propiedad 3', 300, 200, 'Sur', ['Jardín']),
-        Propiedad('Propiedad 4', 100, 100, 'Este', ['Garaje']),
-        Propiedad('Propiedad 5', 250, 180, 'Oeste', ['Terraza'])
-    ]
-
-    preferencias = {
-        'precio': 100,
-        'tamano': 100,
-        'ubicacion': 'Este'
-    }
-
-    vendedor = Vendedor(propiedades)
-    solucion = vendedor.ofrecer(preferencias)
-
-    if solucion:
-        print("Camino hacia la propiedad encontrada:", solucion)
-    else:
-        print("No se encontró ninguna propiedad que cumpla con las preferencias.")"""
     
