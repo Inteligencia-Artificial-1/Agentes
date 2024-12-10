@@ -1,46 +1,64 @@
-from .agentes import Agente
+from threading import Lock
+import time
 
-ACCIONES = {
-    "Preparación_del_terreno": {"costo": 100, "descripcion": "Limpieza y nivelación del terreno"},
-    "Excavación_y_cimentación": {"costo": 200, "descripcion": "Excavación de zanjas y construcción de cimientos"},
-    "Construcción_de_muros_de_ladrillo": {"costo": 150, "descripcion": "Construcción de muros de ladrillo"},
-    "Instalaciones_básicas": {"costo": 250, "descripcion": "Instalación de tuberías y cableado eléctrico"},
-    "Enlucido_de_paredes": {"costo": 50, "descripcion": "Enlucido de paredes para acabados iniciales"},
-    "Colocación_de_cerámica_o_baldosas": {"costo": 100, "descripcion": "Colocación de cerámica o baldosas en pisos y paredes"},
+# Diccionario global para controlar el estado de las etapas
+estado_etapas = {
+    "Preparación_del_terreno": False,
+    "Excavación_y_cimentación": False,
+    "Construcción_de_muros_de_ladrillo": False,
+    "Instalaciones_básicas": False,
+    "Enlucido_de_paredes": False,
+    "Colocación_de_cerámica_o_baldosas": False,
 }
 
-ORDEN_ETAPAS = [
-    "Preparación_del_terreno",
-    "Excavación_y_cimentación",
-    "Construcción_de_muros_de_ladrillo",
-    "Instalaciones_básicas",
-    "Enlucido_de_paredes",
-    "Colocación_de_cerámica_o_baldosas"
-]
+# Bloqueo para sincronización de acceso al estado de etapas
+lock = Lock()
 
-class Albañil(Agente):
+# Diccionario de tareas con tiempos de simulación (en segundos)
+REGLAS = {
+    "Preparación_del_terreno": 5,
+    "Excavación_y_cimentación": 10,
+    "Construcción_de_muros_de_ladrillo": 8,
+    "Instalaciones_básicas": 12,
+    "Enlucido_de_paredes": 6,
+    "Colocación_de_cerámica_o_baldosas": 7,
+}
+
+# Orden de etapas para respetar el flujo de construcción
+ORDEN_ETAPAS = list(estado_etapas.keys())
+
+
+class Albañil:
     def __init__(self, nombre, tipo):
-        super().__init__(nombre)
-        self.tipo = "experimentado" if tipo == "experimentado" else "ayudante"
+        self.nombre = nombre
+        self.tipo = tipo
         self.habilidades = []
-        self.etapa_actual = 0  # Índice de la etapa actual en ORDEN_ETAPAS
+
+    def entrenar(self, habilidad):
+        if habilidad in REGLAS:
+            self.habilidades.append(habilidad)
+            print(f"{self.nombre} ha sido entrenado en '{habilidad}'.")
+        else:
+            print(f"Habilidad '{habilidad}' no válida.")
 
     def trabajar(self, tarea):
         if tarea not in ORDEN_ETAPAS:
-            print(f"La tarea '{tarea}' no forma parte del procedimiento de construcción.")
-            return
-        if ORDEN_ETAPAS.index(tarea) > self.etapa_actual:
-            print(f"No se puede realizar '{tarea}' antes de completar '{ORDEN_ETAPAS[self.etapa_actual]}'.")
-            return
-        if tarea not in self.habilidades:
-            print(f"{self.nombre} no tiene la habilidad para realizar '{tarea}'.")
+            print(f"{self.nombre}: La tarea '{tarea}' no es válida.")
             return
 
-        accion = ACCIONES[tarea]
-        print(f"{self.nombre} ({self.tipo}) está ejecutando '{accion['descripcion']}' con un costo de Bs. {accion['costo']}.")
-        self.etapa_actual += 1
+        # Verifica si las etapas anteriores están completas
+        index_tarea = ORDEN_ETAPAS.index(tarea)
+        for i in range(index_tarea):
+            etapa_previa = ORDEN_ETAPAS[i]
+            if not estado_etapas[etapa_previa]:
+                print(f"{self.nombre} no puede realizar '{tarea}' hasta que se complete '{etapa_previa}'.")
+                return
 
-    def entrenar(self, habilidad):
-        if habilidad in ACCIONES and habilidad not in self.habilidades:
-            self.habilidades.append(habilidad)
-            print(f"{self.nombre} tiene la habilidad para realizar '{habilidad}'.")
+        if tarea in self.habilidades:
+            with lock:  # Acceso seguro a `estado_etapas`
+                print(f"{self.nombre} ({self.tipo}) está comenzando '{tarea}'. Tiempo estimado: {REGLAS[tarea]} dias.")
+                time.sleep(REGLAS[tarea])  # Simula el tiempo de trabajo
+                estado_etapas[tarea] = True
+                print(f"{self.nombre} ha completado '{tarea}'.")
+        else:
+            print(f"{self.nombre} no tiene la habilidad para realizar '{tarea}'. Está en espera mientras otros trabajan.")

@@ -1,6 +1,10 @@
-from agentes.albañil import Albañil, ACCIONES, ORDEN_ETAPAS
+from threading import Thread
+import time
+from agentes.albañil import Albañil, REGLAS, ORDEN_ETAPAS
 
-albañiles = []
+albañiles = []  # Lista global de albañiles
+estado_etapas = {etapa: False for etapa in ORDEN_ETAPAS}  # Estado de cada etapa
+
 
 def registrar_albañiles():
     global albañiles
@@ -12,7 +16,7 @@ def registrar_albañiles():
 
         albañil = Albañil(nombre, tipo)
         print("Selecciona las habilidades para este albañil:")
-        habilidades = list(ACCIONES.keys())
+        habilidades = list(REGLAS.keys())
         for i, habilidad in enumerate(habilidades, start=1):
             print(f"{i}. {habilidad}")
         seleccionadas = input("Selecciona habilidades separadas por coma (ej: 1,3): ").strip()
@@ -28,17 +32,46 @@ def registrar_albañiles():
         if continuar != "s":
             break
 
-def asignar_tareas():
-    global albañiles
-    for albañil in albañiles:
-        print(f"\nAsignando tareas para {albañil.nombre} ({albañil.tipo}):")
-        for tarea in ORDEN_ETAPAS:
-            if tarea in albañil.habilidades:
-                albañil.trabajar(tarea)
-            else:
-                print(f"{albañil.nombre} no puede realizar '{tarea}' por falta de habilidad.")
-                break
 
+def ejecutar_construccion():
+    global albañiles, estado_etapas
+
+    for i, etapa in enumerate(ORDEN_ETAPAS):
+        print(f"\nIniciando la etapa: {etapa}")
+
+        # Verifica si la etapa anterior está completada
+        if i > 0 and not estado_etapas[ORDEN_ETAPAS[i - 1]]:
+            print(f"No se puede realizar '{etapa}' antes de completar '{ORDEN_ETAPAS[i - 1]}'.")
+            continue
+
+        etapa_threads = []
+        for albañil in albañiles:
+            thread = Thread(target=ejecutar_tarea_albañil, args=(albañil, etapa))
+            etapa_threads.append(thread)
+            thread.start()
+        for thread in etapa_threads:
+            thread.join()
+
+        # Marcar etapa como completada si al menos un albañil la completó
+        estado_etapas[etapa] = True
+
+    # Verifica si todas las etapas fueron completadas
+    if all(estado_etapas.values()):
+        print("\n¡La casa ya fue construida exitosamente! Todas las etapas han concluido.")
+    else:
+        print("\nNo todas las etapas fueron completadas. La casa no está terminada.")
+
+
+def ejecutar_tarea_albañil(albañil, tarea):
+    if tarea in albañil.habilidades:
+        albañil.trabajar(tarea)
+    else:
+        print(f"{albañil.nombre} no puede realizar '{tarea}'. Está en espera mientras otros trabajan.")
+        time.sleep(5)  # Simula un tiempo de espera para el albañil sin habilidades.
+
+
+# Registro de albañiles
 registrar_albañiles()
 
-asignar_tareas()
+# Ejecución de la construcción
+ejecutar_construccion()
