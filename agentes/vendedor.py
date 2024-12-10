@@ -101,7 +101,40 @@ class Problema:
         self.estados_objetivo = estados_objetivo
         self.acciones = acciones
     
+
+
 if __name__ == '__main__':
+    propiedades = [
+        Propiedad('Propiedad 1', 100, 120, 'Centro', ['Piscina']),
+        Propiedad('Propiedad 2', 200, 150, 'Norte', ['Gimnasio']),
+        Propiedad('Propiedad 3', 300, 200, 'Sur', ['Jardín']),
+        Propiedad('Propiedad 4', 100, 100, 'Este', ['Garaje']),
+        Propiedad('Propiedad 5', 250, 180, 'Oeste', ['Terraza'])
+    ]
+    vendedor = Vendedor(propiedades)
+
+    print("Presupuesto de la propiedad que buscas")
+    precio= int(input())
+    print("Te interesa que tenga algun tamaño")
+    tamanio=int(input())
+    print("Buscas que este Ubicada en algun lugar")
+    ubicacion=input()
+
+    preferencias = {
+        "precio": precio,
+        "tamano": tamanio,
+        "ubicacion": ubicacion
+    }
+    
+    vendedor = Vendedor(propiedades)
+    solucion = vendedor.ofrecer(preferencias)
+
+    if solucion:
+        print("Tengo una propiedad que te puede interesar:", solucion)
+    else:
+        print("No se encontró ninguna propiedad que cumpla con las preferencias.")
+
+"""if __name__ == '__main__':
     propiedades = [
         Propiedad('Propiedad 1', 100, 120, 'Centro', ['Piscina']),
         Propiedad('Propiedad 2', 200, 150, 'Norte', ['Gimnasio']),
@@ -122,6 +155,5 @@ if __name__ == '__main__':
     if solucion:
         print("Camino hacia la propiedad encontrada:", solucion)
     else:
-        print("No se encontró ninguna propiedad que cumpla con las preferencias.")
-
+        print("No se encontró ninguna propiedad que cumpla con las preferencias.")"""
     
