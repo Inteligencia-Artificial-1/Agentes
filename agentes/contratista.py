@@ -1,4 +1,5 @@
-from main import Agente
+from .agentes import Agente
+
 class Contratista(Agente):
     def __init__(self, nombre):
         super().__init__(nombre)
